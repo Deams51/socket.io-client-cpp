@@ -63,7 +63,7 @@ namespace sio
         sync_close();
     }
     
-    void client_impl::connect(const string& uri, const map<string,string>& query)
+    void client_impl::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers)
     {
         if(m_reconn_timer)
         {
@@ -98,6 +98,8 @@ namespace sio
             query_str.append(it->second);
         }
         m_query_string=move(query_str);
+
+        m_http_headers = headers;
 
         this->reset_states();
         m_client.get_io_service().dispatch(lib::bind(&client_impl::connect_impl,this,uri,m_query_string));
@@ -205,19 +207,28 @@ namespace sio
 #else
             ss<<"ws://";
 #endif
-            if (m_sid.size()==0) {
-                ss<<uo.get_host()<<":"<<uo.get_port()<<"/socket.io/?EIO=4&transport=websocket&t="<<time(NULL)<<queryString;
+            const std::string host(uo.get_host());
+            // As per RFC2732, literal IPv6 address should be enclosed in "[" and "]".
+            if(host.find(':')!=std::string::npos){
+                ss<<"["<<uo.get_host()<<"]";
+            } else {
+                ss<<uo.get_host();
             }
-            else
-            {
-                ss<<uo.get_host()<<":"<<uo.get_port()<<"/socket.io/?EIO=4&transport=websocket&sid="<<m_sid<<"&t="<<time(NULL)<<queryString;
+            ss<<":"<<uo.get_port()<<"/socket.io/?EIO=4&transport=websocket";
+            if(m_sid.size()>0){
+                ss<<"&sid="<<m_sid;
             }
+            ss<<"&t="<<time(NULL)<<queryString;
             lib::error_code ec;
             client_type::connection_ptr con = m_client.get_connection(ss.str(), ec);
             if (ec) {
                 m_client.get_alog().write(websocketpp::log::alevel::app,
                                           "Get Connection Error: "+ec.message());
                 break;
+            }
+
+            for( auto&& header: m_http_headers ) {
+                con->replace_header(header.first, header.second);
             }
 
             m_client.connect(con);
@@ -253,13 +264,6 @@ namespace sio
     {
         if(m_con_state == con_opened)
         {
-            //delay the ping, since we already have message to send.
-            boost::system::error_code timeout_ec;
-            if(m_ping_timer)
-            {
-                m_ping_timer->expires_from_now(milliseconds(m_ping_interval),timeout_ec);
-                m_ping_timer->async_wait(lib::bind(&client_impl::ping,this,lib::placeholders::_1));
-            }
             lib::error_code ec;
             m_client.send(m_con,*payload_ptr,opcode,ec);
             if(ec)
