@@ -1,2 +1,15 @@
 build/
 **/*.user
+
+#build files
+*.vcxproj
+*.filters
+boost/
+Win32/
+x64/
+CMakeFiles/
+CMakeCache.txt
+*.db
+*.sln
+cmake_install.cmake
+.vs/
