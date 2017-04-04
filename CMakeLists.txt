@@ -16,11 +16,12 @@ MESSAGE(SEND_ERROR "CMAKE_BUILD_TYPE must be either Release or Debug")
 return()
 endif()
 
-set(BOOST_VER "1.55.0" CACHE STRING "boost version" )
+set(BOOST_VER "1.60.0" CACHE STRING "boost version" )
 
 set(Boost_USE_MULTITHREADED ON) 
 set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random) 
+find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time) 
+#find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random) 
 
 aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src ALL_SRC)
 aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src/internal ALL_SRC)
@@ -46,7 +47,7 @@ set_target_properties(sioclient
 endif()
 list(APPEND TARGET_LIBRARIES sioclient)
 
-find_package(OpenSSL)
+#[[find_package(OpenSSL)
 if(OPENSSL_FOUND)
 add_library(sioclient_tls ${ALL_SRC})
 target_include_directories(sioclient_tls PRIVATE ${Boost_INCLUDE_DIRS} 
@@ -69,7 +70,7 @@ set_target_properties(sioclient_tls
 endif()
 list(APPEND TARGET_LIBRARIES sioclient_tls)
 
-endif()
+endif()]]
 
 install(FILES ${ALL_HEADERS} 
     DESTINATION "${CMAKE_CURRENT_LIST_DIR}/build/include"
