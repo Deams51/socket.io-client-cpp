@@ -32,7 +32,8 @@ namespace sio
         m_reconn_attempts(0xFFFFFFFF),
         m_reconn_made(0),
         m_reconn_delay(5000),
-        m_reconn_delay_max(25000)
+        m_reconn_delay_max(25000),
+		m_reconn_attempts_when_closed(m_reconn_attempts)
     {
         using websocketpp::log::alevel;
 #ifndef DEBUG
@@ -58,13 +59,24 @@ namespace sio
     }
     
     client_impl::~client_impl()
-    {
-        this->sockets_invoke_void(&sio::socket::on_close);
+    {	
+		/*close();
+
+		//when we join on close, don't reset
+		if (m_network_thread)
+		{
+			m_network_thread->join();
+			m_network_thread.reset();
+		}*/
+
         sync_close();
     }
     
     void client_impl::connect(const string& uri, const map<string,string>& query, const map<string, string>& headers)
     {
+		//reset connection attempts to last set
+		m_reconn_attempts = m_reconn_attempts_when_closed;
+
         if(m_reconn_timer)
         {
             m_reconn_timer->cancel();
@@ -139,6 +151,10 @@ namespace sio
 
     void client_impl::close()
     {
+		//don't ever try to close with multiple reconnect attempts
+		m_reconn_attempts_when_closed = m_reconn_attempts;
+		this->set_reconnect_attempts(0);
+
         m_con_state = con_closing;
         this->sockets_invoke_void(&sio::socket::close);
         m_client.get_io_service().dispatch(lib::bind(&client_impl::close_impl, this,close::status::normal,"End by user"));
@@ -146,6 +162,9 @@ namespace sio
 
     void client_impl::sync_close()
     {
+		m_reconn_attempts_when_closed = m_reconn_attempts;
+		this->set_reconnect_attempts(0);
+
         m_con_state = con_closing;
         this->sockets_invoke_void(&sio::socket::close);
         m_client.get_io_service().dispatch(lib::bind(&client_impl::close_impl, this,close::status::normal,"End by user"));
@@ -427,7 +446,8 @@ namespace sio
                 LOG("Reconnect for attempt:"<<m_reconn_made<<endl);
                 unsigned delay = this->next_delay();
                 if(m_reconnect_listener) m_reconnect_listener(m_reconn_made,delay);
-                m_reconn_timer.reset(new boost::asio::deadline_timer(m_client.get_io_service()));
+                
+				m_reconn_timer.reset(new boost::asio::deadline_timer(m_client.get_io_service()));
                 boost::system::error_code ec;
                 m_reconn_timer->expires_from_now(milliseconds(delay), ec);
                 m_reconn_timer->async_wait(lib::bind(&client_impl::timeout_reconnect,this,lib::placeholders::_1));

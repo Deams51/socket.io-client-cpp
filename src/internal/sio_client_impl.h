@@ -111,7 +111,7 @@ namespace sio
         
         std::string const& get_sessionid() const { return m_sid; }
 
-        void set_reconnect_attempts(unsigned attempts) {m_reconn_attempts = attempts;}
+        void set_reconnect_attempts(unsigned attempts) {m_reconn_attempts_when_closed = m_reconn_attempts = attempts;}
 
         void set_reconnect_delay(unsigned millis) {m_reconn_delay = millis;if(m_reconn_delay_max<millis) m_reconn_delay_max = millis;}
 
@@ -218,6 +218,7 @@ namespace sio
         unsigned m_reconn_delay_max;
 
         unsigned m_reconn_attempts;
+		unsigned m_reconn_attempts_when_closed;
 
         unsigned m_reconn_made;
         

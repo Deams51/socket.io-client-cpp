@@ -287,10 +287,10 @@ namespace sio
             packet p(packet::type_disconnect,m_nsp);
             send_packet(p);
             
-            if(!m_connection_timer)
-            {
-                m_connection_timer.reset(new boost::asio::deadline_timer(m_client->get_io_service()));
-            }
+            //if(!m_connection_timer)
+            //{
+            m_connection_timer.reset(new boost::asio::deadline_timer(m_client->get_io_service()));
+            //}
             boost::system::error_code ec;
             m_connection_timer->expires_from_now(boost::posix_time::milliseconds(3000), ec);
             m_connection_timer->async_wait(lib::bind(&socket::impl::on_close, this));
