@@ -16,3 +16,4 @@ cmake_install.cmake
 sioclient.VC.VC.opendb
 sioclient.dir
 Releasex64
+Release
