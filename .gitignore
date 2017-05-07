@@ -13,3 +13,6 @@ CMakeCache.txt
 *.sln
 cmake_install.cmake
 .vs/
+sioclient.VC.VC.opendb
+sioclient.dir
+Releasex64
