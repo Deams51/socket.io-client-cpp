@@ -1,6 +1,5 @@
 # Socket.IO C++ Client
-[![Build status - Linux](https://travis-ci.org/helios-labs-shared/socket.io-client-cpp.svg?branch=master)](https://travis-ci.org/helios-labs-shared/socket.io-client-cpp)
-[![Build status - Windows](https://ci.appveyor.com/api/projects/status/ob8378usf1u22pa3?svg=true)](https://ci.appveyor.com/project/helios-labs-shared/socket-io-client-cpp)
+[![Build Status](https://travis-ci.com/comaeio/socket.io-client-cpp11-non-boost.svg)
 
 By virtue of being written in C++, this client works in several different platforms. The [examples](https://github.com/socketio/socket.io-client-cpp/tree/master/examples) folder contains an iPhone, QT and Console example chat client! It depends on [websocket++](https://github.com/zaphoyd/websocketpp) and is inspired by [socket.io-clientpp](https://github.com/ebshimizu/socket.io-clientpp).
 
@@ -8,13 +7,17 @@ By virtue of being written in C++, this client works in several different platfo
 
 ## Features
 
-- 100% written in modern C++11
+- 110% written in modern C++11
+- Uses the excellent [websocketpp](https://github.com/zaphoyd/websocketpp)
+library in C++11 mode even on Windows.
 - Compatible with socket.io 1.0+ protocol
 - Binary support
 - Automatic JSON encoding
 - Multiplex support
 - Similar API to the Socket.IO JS client
 - Cross platform
+- Uses [ASIO Standalone](http://think-async.com/Asio/AsioStandalone) - no need
+to include a dependency on boost.
 
 ## Installation alternatives
 
@@ -43,7 +46,7 @@ h.connect("http://127.0.0.1:3000");
 
 ```C++
 // emit event name only:
-h.socket()->emit("login");
+h.socket->emit("login");
 
 // emit text
 h.socket()->emit("add user", username);
